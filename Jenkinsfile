@@ -60,7 +60,8 @@ try {
                         script: """
                             shasum \
                                 --algorithm 256 \
-                                $file
+                                $file \
+                            | cut -d' ' -f1
                         """,
                         label: "🔢 Hash",
                         returnStdout: true

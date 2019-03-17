@@ -21,7 +21,6 @@ properties([
     buildDiscarder(logRotator(numToKeepStr: '100')),
 ])
 
-
 String version = "2.167"
 String file = "jenkins-${version}.war"
 String url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
@@ -33,7 +32,11 @@ try {
                 stage("✨ Latest Version") {
                     // https://jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script
                     String output = sh(
-                        script: "brew info --json=v1 jenkins | jq .[0].versions.stable",
+                        script: """
+                            brew info --json=v1 jenkins \
+                                | jq .[0].versions.stable \
+                                | tr -d '"'
+                        """,
                         label: "✨ Version",
                         returnStdout: true
                     ).trim()

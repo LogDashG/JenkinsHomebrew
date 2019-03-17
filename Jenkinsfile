@@ -56,7 +56,7 @@ try {
                         """,
                         label: "👇🏻 Download"
                     )
-                    sh(
+                    String hash = sh(
                         script: """
                             shasum \
                                 --algorithm 256 \
@@ -65,6 +65,7 @@ try {
                         label: "🔢 Hash",
                         returnStdout: true
                     ).trim()
+                    echo "File hash: $hash"
                 }
                 stage("🍼 Formula") {
 

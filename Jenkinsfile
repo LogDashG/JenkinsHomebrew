@@ -23,7 +23,7 @@ properties([
 
 
 String version = "2.167"
-String file = "jenkins-$version.war"
+String file = "jenkins-${version}.war"
 String url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
 
 try {

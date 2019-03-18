@@ -143,7 +143,7 @@ catch (Exception ex) {
                 |
                 |${env.BUILD_URL}
                 |
-                |${ex.message}
+                |${ex}
                 |
                 |${env.BUILD_URL}console
                 |""".stripMargin()

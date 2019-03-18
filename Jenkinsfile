@@ -43,7 +43,6 @@ try {
                         returnStdout: true
                     ).trim()
                     echo "Jenkins formula version: $version"
-                    file = "jenkins-${version}.war"
                 }
                 stage("📡 Check for new") {
                     // Increment minor version
@@ -53,6 +52,7 @@ try {
                     version = "$major.$minor"
 
                     echo "Checking for new Jenkins release with version: $version"
+                    file = "jenkins-${version}.war"
                     url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
 
                     sh(

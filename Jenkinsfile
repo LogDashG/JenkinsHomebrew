@@ -21,17 +21,19 @@ properties([
     buildDiscarder(logRotator(numToKeepStr: '100')),
 ])
 
-String version = "2.167"
-String file = "jenkins-${version}.war"
-String url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
+// Global variables
+String version
+String file
+String url
 
 try {
     timeout(time: 1, unit: 'HOURS') {
         withEnv(['LANG=en_US.UTF-8']) {
             node {
                 stage("✨ Latest Version") {
+                    // Parse version from homebrew formula json
                     // https://jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script
-                    String output = sh(
+                    version = sh(
                         script: """
                             brew info --json=v1 jenkins \
                                 | jq .[0].versions.stable \
@@ -40,11 +42,29 @@ try {
                         label: "✨ Version",
                         returnStdout: true
                     ).trim()
-                    echo "Jenkins formula version: $output"
-                    // TODO: Parse version
+                    echo "Jenkins formula version: $version"
+                    file = "jenkins-${version}.war"
                 }
                 stage("📡 Check for new") {
-                    // TODO: Compare versions
+                    // Increment minor version
+                    def (major, minorString) = version.tokenize('.')
+                    Integer minor = minorString as Integer
+                    minor++
+                    version = "$major.$minor"
+
+                    echo "Checking for new Jenkins release with version: $version"
+                    url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
+
+                    sh(
+                        script: """
+                            curl \
+                                --head \
+                                --fail \
+                                --silent \
+                                $url
+                        """,
+                        label: "✔️ Check"
+                    )
                 }
                 stage("👇🏻 Download") {
                     echo "👇🏻 Downloading Jenkins $version - $url"
@@ -90,7 +110,7 @@ catch (Exception ex) {
                 |
                 |${ex.message}
                 |
-                |${env.BUILD_URL}/console
+                |${env.BUILD_URL}console
                 |""".stripMargin()
 
     mail to: MAIL_TO,

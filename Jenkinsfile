@@ -22,7 +22,8 @@ properties([
 ])
 
 // Global variables
-String version
+String currentVersion
+String newVersion
 String file
 String url
 
@@ -30,10 +31,10 @@ try {
     timeout(time: 1, unit: 'HOURS') {
         withEnv(['LANG=en_US.UTF-8']) {
             node {
-                stage("✨ Latest Version") {
+                stage("💁🏻‍♀️ Current Version") {
                     // Parse version from homebrew formula json
                     // https://jenkins.io/doc/pipeline/steps/workflow-durable-task-step/#sh-shell-script
-                    version = sh(
+                    currentVersion = sh(
                         script: """
                             brew info --json=v1 jenkins \
                                 | jq .[0].versions.stable \
@@ -43,18 +44,18 @@ try {
                         returnStdout: true
                     ).trim()
 
-                    echo "Jenkins formula version: $version"
+                    echo "Current Jenkins formula version: $currentVersion"
                 }
-                stage("📡 Check for new") {
+                stage("📡 New Release") {
                     // Increment minor version
-                    def (major, minorString) = version.tokenize('.')
+                    def (major, minorString) = currentVersion.tokenize('.')
                     Integer minor = minorString as Integer
                     minor++
-                    version = "$major.$minor"
+                    newVersion = "$major.$minor"
 
-                    echo "Checking for new Jenkins release with version: $version"
-                    file = "jenkins-${version}.war"
-                    url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
+                    echo "Checking for new Jenkins release with version: $newVersion"
+                    file = "jenkins-${newVersion}.war"
+                    url = "http://mirrors.jenkins.io/war/$newVersion/jenkins.war"
 
                     Integer status = sh(
                         script: """
@@ -68,12 +69,19 @@ try {
                         returnStatus: true
                     )
                     if (status != 0) {
-                        echo "Jenkins $version is not available yet."
+                        echo "Version $currentVersion is still the latest. 😞"
                         currentBuild.result = 'ABORTED'
+                    } else {
+                        echo "Jenkins $newVersion IS NOW AVAILABLE! 🎉"
                     }
                 }
+
+                if (currentBuild.result != 'SUCCESS') {
+                    return
+                }
+
                 stage("👇🏻 Download") {
-                    echo "👇🏻 Downloading Jenkins $version - $url"
+                    echo "👇🏻 Downloading Jenkins $newVersion - $url"
 
                     sh(
                         script: """

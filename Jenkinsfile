@@ -7,6 +7,7 @@
  */
 
 import jenkins.model.*
+import hudson.model.Result
 
 def MAIL_TO = JenkinsLocationConfiguration.get().getAdminAddress()
 echo "MAIL_TO: $MAIL_TO"
@@ -70,7 +71,7 @@ try {
                     )
                     if (status != 0) {
                         echo "Version $currentVersion is still the latest. 😞"
-                        currentBuild.result = 'ABORTED'
+                        currentBuild.rawBuild.@result = hudson.model.Result.ABORTED
                     } else {
                         echo "Jenkins $newVersion IS NOW AVAILABLE! 🎉"
                     }
@@ -78,7 +79,13 @@ try {
 
                 echo "currentBuild.result: ${currentBuild.result}"
 
-                if (currentBuild.result != 'SUCCESS') {
+                // build.@result = hudson.model.Result.SUCCESS
+                // build.@result = hudson.model.Result.NOT_BUILT
+                // build.@result = hudson.model.Result.UNSTABLE
+                // build.@result = hudson.model.Result.FAILURE
+                // build.@result = hudson.model.Result.ABORTED
+
+                if (currentBuild.result && currentBuild.result != 'SUCCESS') {
                     return
                 }
 

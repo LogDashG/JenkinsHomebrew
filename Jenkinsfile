@@ -27,6 +27,7 @@ String currentVersion
 String newVersion
 String file
 String url
+String hash
 
 try {
     timeout(time: 1, unit: 'HOURS') {
@@ -103,7 +104,7 @@ try {
                         """,
                         label: "👇🏻 Download"
                     )
-                    String hash = sh(
+                    hash = sh(
                         script: """
                             shasum \
                                 --algorithm 256 \
@@ -115,6 +116,15 @@ try {
                     ).trim()
 
                     echo "File hash: $hash"
+                }
+                stage("✉️ Notify") {
+                    mail to: MAIL_TO,
+                        subject: "✨👷🏻‍♂️ Jenkins $newVersion has been released",
+                        body: """
+                            Jenkins $newVersion
+                            $url
+                            $hash
+                        """
                 }
                 stage("🍼 Formula") {
                     // TODO: Update homebrew formula

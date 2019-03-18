@@ -76,6 +76,8 @@ try {
                     }
                 }
 
+                echo "currentBuild.result: ${currentBuild.result}"
+
                 if (currentBuild.result != 'SUCCESS') {
                     return
                 }

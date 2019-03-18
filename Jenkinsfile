@@ -42,6 +42,7 @@ try {
                         label: "✨ Version",
                         returnStdout: true
                     ).trim()
+
                     echo "Jenkins formula version: $version"
                 }
                 stage("📡 Check for new") {
@@ -55,7 +56,7 @@ try {
                     file = "jenkins-${version}.war"
                     url = "http://mirrors.jenkins.io/war/$version/jenkins.war"
 
-                    sh(
+                    Integer status = sh(
                         script: """
                             curl \
                                 --head \
@@ -63,11 +64,17 @@ try {
                                 --silent \
                                 $url
                         """,
-                        label: "✔️ Check"
+                        label: "✔️ Check",
+                        returnStatus: true
                     )
+                    if (status != 0) {
+                        echo "Jenkins $version is not available yet."
+                        currentBuild.result = 'ABORTED'
+                    }
                 }
                 stage("👇🏻 Download") {
                     echo "👇🏻 Downloading Jenkins $version - $url"
+
                     sh(
                         script: """
                             curl \
@@ -89,10 +96,11 @@ try {
                         label: "🔢 Hash",
                         returnStdout: true
                     ).trim()
+
                     echo "File hash: $hash"
                 }
                 stage("🍼 Formula") {
-
+                    // TODO: Update homebrew formula
                 }
             }
         }

@@ -126,9 +126,17 @@ try {
                             $hash
                         """
                 }
-                stage("🍼 Formula") {
-                    // TODO: Update homebrew formula
-                }
+            } // node
+
+            // Intentionally run outside of a node block because: It is a waste of an executor slot to wrap the build
+            // step in node. Your upstream executor will just be sitting idle for no reason.
+            stage("🍼 Formula") {
+                // https://jenkins.io/doc/pipeline/steps/pipeline-build-step/#build-build-a-job
+                build job: "../JenkinsPhatblatServices/master",
+                    parameters: [
+                        string(name: "newVersion", value: newVersion),
+                        string(name: "fileHash", value: hash)
+                    ]
             }
         }
     }
